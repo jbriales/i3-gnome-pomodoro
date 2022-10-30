@@ -73,6 +73,21 @@ def format_output_text(pomodoro_data, always, icon_text, show_seconds, format):
         return icon_text
     return ""
 
+def get_color (pomodoro_data):
+    if pomodoro_data["is_paused"]:
+        return "#969696" # gray
+
+    if pomodoro_data["state"] != "pomodoro":
+        return "#0dff00" # green
+
+    remaining_minutes = int(math.floor(round(pomodoro_data["remaining"])/60))
+    if remaining_minutes < 5:
+        return "#ff0004" # red
+    if remaining_minutes < 15:
+        return "#ffa600" # orange
+    # otherwise
+    return "#000000" # black
+
 
 def format_output_waybar(pomodoro_data, always, icon_text, show_seconds, format):
     import json
@@ -134,8 +149,13 @@ def status(always, icon_text, show_seconds, format):
         click.echo(format_output_waybar(pomodoro_data,
                                         always, icon_text, show_seconds, format))
     else:
-        click.echo(format_output_text(pomodoro_data,
-                                      always, icon_text, show_seconds, format))
+        text = format_output_text(pomodoro_data,
+                                      always, icon_text, show_seconds, format)
+        # Print according to i3blocks raw format, one field per line:
+        click.echo(text)  # full_text
+        click.echo(text)  # short_text
+        click.echo(get_color(pomodoro_data))  # color
+        # TODO: background, if desired
 
 
 @click.command(help="""Pauses the current pomodoro if any is running.""")
